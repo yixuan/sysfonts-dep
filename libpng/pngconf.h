@@ -366,6 +366,11 @@
 #    endif
 
 #  elif defined(__GNUC__)
+/* Yixuan: used to eliminate compiler warning in pngerror.c png_longjmp() */
+#    ifndef PNG_UNREACHABLE
+#      define PNG_UNREACHABLE __builtin_unreachable()
+#    endif
+/**/
 #    ifndef PNG_USE_RESULT
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
 #    endif
@@ -426,6 +431,11 @@
 #  endif
 #endif /* PNG_PEDANTIC_WARNINGS */
 
+/* Yixuan: used to eliminate compiler warning in pngerror.c png_longjmp() */
+#ifndef PNG_UNREACHABLE
+#  define PNG_UNREACHABLE
+#endif
+/**/
 #ifndef PNG_DEPRECATED
 #  define PNG_DEPRECATED  /* Use of this function is deprecated */
 #endif

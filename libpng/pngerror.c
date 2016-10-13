@@ -18,6 +18,13 @@
 
 #include "pngpriv.h"
 
+/* Added by Yixuan Qiu */
+void PNG_ABORT_WITH_R_HANDLER()
+{
+    Rf_error("unexpected error from libpng");
+}
+
+
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 
 static PNG_FUNCTION(void, png_default_error,PNGARG((png_const_structrp png_ptr,
@@ -773,6 +780,9 @@ png_longjmp,(png_const_structrp png_ptr, int val),PNG_NORETURN)
     * PNG_ABORT().
     */
    PNG_ABORT();
+   /* Yixuan: used to eliminate compiler warning */
+   PNG_UNREACHABLE;
+   /**/
 }
 
 #ifdef PNG_WARNINGS_SUPPORTED
