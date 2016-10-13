@@ -6,17 +6,17 @@
 extern "C" {
 #endif
 
-#define R_VERSION 196610
-#define R_NICK "Frisbee Sailing"
+#define R_VERSION 197376
+#define R_NICK "Supposedly Educational"
 #define R_Version(v,p,s) (((v) * 65536) + ((p) * 256) + (s))
 #define R_MAJOR  "3"
-#define R_MINOR  "0.2"
+#define R_MINOR  "3.0"
 #define R_STATUS ""
-#define R_YEAR   "2013"
-#define R_MONTH  "09"
-#define R_DAY    "25"
-#define R_SVN_REVISION 63987
-#define R_FILEVERSION    3,02,63987,0
+#define R_YEAR   "2016"
+#define R_MONTH  "05"
+#define R_DAY    "03"
+#define R_SVN_REVISION 70573
+#define R_FILEVERSION    3,30,70573,0
 
 #ifdef __cplusplus
 }

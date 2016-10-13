@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1998-2012    The R Core Team
+ *  Copyright (C) 1998-2016    The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  *
  *
  * Generally useful  UTILITIES  *NOT* relying on R internals (from Defn.h)
@@ -27,7 +27,15 @@
 
 #include <R_ext/Boolean.h>
 #include <R_ext/Complex.h>
-#include <stddef.h>
+
+#ifndef NO_C_HEADERS
+# if defined(__cplusplus) && !defined(DO_NOT_USE_CXX_HEADERS)
+#  include <cstddef>
+using std::size_t;
+# else
+#  include <stddef.h>
+# endif
+#endif
 
 #define revsort       Rf_revsort
 #define iPsort        Rf_iPsort
@@ -55,10 +63,11 @@ void	rPsort(double*, int, int);
 void	cPsort(Rcomplex*, int, int);
 
 /* ../../main/qsort.c : */
+/* dummy renamed to II to avoid problems with g++ on Solaris */
 void R_qsort    (double *v,         size_t i, size_t j);
-void R_qsort_I  (double *v, int *I, int i, int j);
+void R_qsort_I  (double *v, int *II, int i, int j);
 void R_qsort_int  (int *iv,         size_t i, size_t j);
-void R_qsort_int_I(int *iv, int *I, int i, int j);
+void R_qsort_int_I(int *iv, int *II, int i, int j);
 #ifdef R_RS_H
 void F77_NAME(qsort4)(double *v, int *indx, int *ii, int *jj);
 void F77_NAME(qsort3)(double *v,            int *ii, int *jj);
@@ -90,6 +99,9 @@ void R_CheckStack2(size_t);
 int findInterval(double *xt, int n, double x,
 		 Rboolean rightmost_closed,  Rboolean all_inside, int ilo,
 		 int *mflag);
+int findInterval2(double *xt, int n, double x,
+		  Rboolean rightmost_closed,  Rboolean all_inside, Rboolean left_open,
+		  int ilo, int *mflag);
 #ifdef R_RS_H
 int F77_SUB(interv)(double *xt, int *n, double *x,
 		    Rboolean *rightmost_closed, Rboolean *all_inside,

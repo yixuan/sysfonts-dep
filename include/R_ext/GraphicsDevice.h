@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /* Used by third-party graphics devices.
@@ -850,7 +850,7 @@ LibExtern Rboolean mbcslocale;
 #endif
 
 /* Useful for devices: translates Adobe symbol encoding to UTF-8 */
-extern void *AdobeSymbol2utf8(char*out, const char *in, int nwork);
+extern void *AdobeSymbol2utf8(char*out, const char *in, size_t nwork);
 /* Translates Unicode point to UTF-8 */
 extern size_t Rf_ucstoutf8(char *s, const unsigned int c);
 

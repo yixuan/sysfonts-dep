@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2003-12 The R Core Team.
+ *  Copyright (C) 2003-2016 The R Core Team.
  *  Copyright (C) 2008   The R Foundation
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -15,7 +15,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /*
@@ -36,6 +36,7 @@
 #include <R_ext/Complex.h>	/* for Rcomplex */
 #include <R_ext/BLAS.h>
 
+
 /*
   LAPACK function names are [dz]<name>(), where d denotes the real
   version of the function, z the complex version.  (Only
@@ -45,6 +46,11 @@
 #ifdef	__cplusplus
 extern "C" {
 #endif
+
+/* The LAPACK version: might change after installation with
+   external LAPACK
+*/
+extern void F77_NAME(ilaver)(int *major, int *minor, int *patch);
 
 // Never defined by R itself.
 #ifndef La_extern
@@ -67,7 +73,7 @@ extern "C" {
    ========
  */
 
-/* Double precision BiDiagonal matrices */
+//* Double precision BiDiagonal and DIagonal matrices  -> DBD & DDI
 
 /* DBDSQR - compute the singular value decomposition (SVD) of a real */
 /* N-by-N (upper or lower) bidiagonal matrix B */
@@ -84,7 +90,8 @@ La_extern void
 F77_NAME(ddisna)(const char* job, const int* m, const int* n,
 		 double* d, double* sep, int* info);
 
-/* Double precision General Banded matrices */
+
+//* Double precision General Banded matrices -> DGB
 
 /* DGBBRD - reduce a real general m-by-n band matrix A to upper */
 /* bidiagonal form B by an orthogonal transformation  */
@@ -159,7 +166,8 @@ F77_NAME(dgbtrs)(const char* trans, const int* n,
 		 const double* ab, const int* ldab, const int* ipiv,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision GEneral matrices */
+
+//* Double precision GEneral matrices -> DGE
 
 /* DGEBAK - form the right or left eigenvectors of a real general */
 /* matrix by backward transformation on the computed eigenvectors */
@@ -236,18 +244,6 @@ F77_NAME(dgeevx)(const char* balanc, const char* jobvl, const char* jobvr,
 		 double* vr, const int* ldvr, int* ilo, int* ihi,
 		 double* scale, double* abnrm, double* rconde, double* rcondv,
 		 double* work, const int* lwork, int* iwork, int* info);
-/* DGEGV - compute for a pair of n-by-n real nonsymmetric */
-/* matrices A and B, the generalized eigenvalues (alphar +/- */
-/* alphai*i, beta);, and optionally, the left and/or right */
-/* generalized eigenvectors (VL and VR); */
-La_extern void
-F77_NAME(dgegv)(const char* jobvl, const char* jobvr,
-		const int* n, double* a, const int* lda,
-		double* b, const int* ldb,
-		double* alphar, double* alphai,
-		const double* beta, double* vl, const int* ldvl,
-		double* vr, const int* ldvr,
-		double* work, const int* lwork, int* info);
 /* DGEHD2 - reduce a real general matrix A to upper Hessenberg */
 /* form H by an orthogonal similarity transformation */
 La_extern void
@@ -307,11 +303,6 @@ La_extern void
 F77_NAME(dgeqp3)(const int* m, const int* n, double* a, const int* lda,
 		 int* jpvt, double* tau, double* work, const int* lwork,
 		 int* info);
-/* DGEQPF - compute a QR factorization with column pivoting of a */
-/* real M-by-N matrix A */
-La_extern void
-F77_NAME(dgeqpf)(const int* m, const int* n, double* a, const int* lda,
-		 int* jpvt, double* tau, double* work, int* info);
 /* DGEQR2 - compute a QR factorization of a real m by n matrix A */
 La_extern void
 F77_NAME(dgeqr2)(const int* m, const int* n, double* a, const int* lda,
@@ -353,7 +344,7 @@ F77_NAME(dgesvd)(const char* jobu, const char* jobvt, const int* m,
 /* DGESVX - use the LU factorization to compute the solution to a */
 /* real system of linear equations  A * X = B, */
 La_extern void
-F77_NAME(dgesvx)(const int* fact, const char* trans, const int* n,
+F77_NAME(dgesvx)(const char* fact, const char* trans, const int* n,
 		 const int* nrhs, double* a, const int* lda,
 		 double* af, const int* ldaf, int* ipiv,
 		 char *equed, double* r, double* c,
@@ -384,7 +375,8 @@ F77_NAME(dgetrs)(const char* trans, const int* n, const int* nrhs,
 		 const double* a, const int* lda, const int* ipiv,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision General matrices Generalized problems */
+
+//* Double precision General matrices Generalized problems -> DGG
 
 /* DGGBAK - form the right or left eigenvectors of a real */
 /* generalized eigenvalue problem A*x = lambda*B*x, by backward */
@@ -450,21 +442,8 @@ F77_NAME(dggrqf)(const int* m, const int* p, const int* n,
 		 double* a, const int* lda, double* taua,
 		 double* b, const int* ldb, double* taub,
 		 double* work, const int* lwork, int* info);
-/* DGGSVD - compute the generalized singular value decomposition */
-/* (GSVD) of an M-by-N real matrix A and P-by-N real matrix B */
-La_extern void
-F77_NAME(dggsvd)(const char* jobu, const char* jobv, const char* jobq,
-		 const int* m, const int* n, const int* p,
-		 const int* k, const int* l,
-		 double* a, const int* lda,
-		 double* b, const int* ldb,
-		 const double* alpha, const double* beta,
-		 double* u, const int* ldu,
-		 double* v, const int* ldv,
-		 double* q, const int* ldq,
-		 double* work, int* iwork, int* info);
 
-/* Double precision General Tridiagonal matrices */
+//* Double precision General Tridiagonal matrices  -> DGT
 
 /* DGTCON - estimate the reciprocal of the condition number of a real */
 /* tridiagonal matrix A using the LU factorization as computed by DGTTRF */
@@ -512,7 +491,8 @@ F77_NAME(dgttrs)(const char* trans, const int* n, const int* nrhs,
 		 double* dl, double* d, double* du, double* du2,
 		 int* ipiv, double* b, const int* ldb, int* info);
 
-/* Double precision Orthogonal matrices */
+
+//* Double precision Orthogonal matrices  -> DOP & DOR
 
 /* DOPGTR - generate a real orthogonal matrix Q which is defined */
 /* as the product of n-1 elementary reflectors H(i); of order n, */
@@ -697,7 +677,8 @@ F77_NAME(dormtr)(const char* side, const char* uplo,
 		 const double* tau, double* c, const int* ldc,
 		 double* work, const int* lwork, int* info);
 
-/* Double precision Positive definite Band matrices */
+
+//* Double precision Positive definite Band matrices  -> DPB
 
 /* DPBCON - estimate the reciprocal of the condition number (in */
 /* the 1-norm); of a real symmetric positive definite band matrix */
@@ -772,7 +753,8 @@ F77_NAME(dpbtrs)(const char* uplo, const int* n,
 		 const double* ab, const int* ldab,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision Positive definite matrices */
+
+//* Double precision Positive definite matrices  -> DPO
 
 /* DPOCON - estimate the reciprocal of the condition number (in */
 /* the 1-norm); of a real symmetric positive definite matrix using */
@@ -858,7 +840,8 @@ F77_NAME(dppequ)(const char* uplo, const int* n,
 		 const double* ap, double* s, double* scond,
 		 double* amax, int* info);
 
-/* Double precision Positive definite matrices in Packed storage */
+
+//* Double precision Positive definite matrices in Packed storage  -> DPP
 
 /* DPPRFS - improve the computed solution to a system of linear */
 /* equations when the coefficient matrix is symmetric positive */
@@ -906,7 +889,7 @@ F77_NAME(dpptrs)(const char* uplo, const int* n,
 		 const int* nrhs, const double* ap,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision symmetric Positive definite Tridiagonal matrices */
+//* Double precision symmetric Positive definite Tridiagonal matrices  -> DPT
 
 /* DPTCON - compute the reciprocal of the condition number (in */
 /* the 1-norm); of a real symmetric positive definite tridiagonal */
@@ -973,7 +956,7 @@ La_extern void
 F77_NAME(drscl)(const int* n, const double* da,
 		double* x, const int* incx);
 
-/* Double precision Symmetric Band matrices */
+//* Double precision Symmetric Band matrices  -> DSB
 
 /* DSBEV - compute all the eigenvalues and, optionally, */
 /* eigenvectors of a real symmetric band matrix A */
@@ -1035,7 +1018,7 @@ F77_NAME(dsbtrd)(const char* vect, const char* uplo,
 		 double* q, const int* ldq,
 		 double* work, int* info);
 
-/* Double precision Symmetric Packed matrices */
+//* Double precision Symmetric Packed matrices  -> DSP
 
 /* DSPCON - estimate the reciprocal of the condition number (in */
 /* the 1-norm); of a real symmetric packed matrix A using the */
@@ -1152,7 +1135,8 @@ F77_NAME(dsptrs)(const char* uplo, const int* n,
 		 const int* nrhs, const double* ap,
 		 const int* ipiv, double* b, const int* ldb, int* info);
 
-/* Double precision Symmetric Tridiagonal matrices */
+
+//* Double precision Symmetric Tridiagonal matrices  -> DST
 
 /* DSTEBZ - compute the eigenvalues of a symmetric tridiagonal */
 /* matrix T */
@@ -1224,7 +1208,7 @@ F77_NAME(dstevx)(const char* jobz, const char* range,
 		 double* work, int* iwork,
 		 int* ifail, int* info);
 
-/* Double precision SYmmetric matrices */
+//* Double precision SYmmetric matrices  -> DSY
 
 /* DSYCON - estimate the reciprocal of the condition number (in */
 /* the 1-norm); of a real symmetric matrix A using the */
@@ -1381,7 +1365,7 @@ F77_NAME(dsytrs)(const char* uplo, const int* n,
 		 const int* ipiv,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision Triangular Band matrices */
+//* Double precision Triangular Band matrices  -> DTB
 
 /* DTBCON - estimate the reciprocal of the condition number of a */
 /* triangular band matrix A, in either the 1-norm or the */
@@ -1413,7 +1397,7 @@ F77_NAME(dtbtrs)(const char* uplo, const char* trans,
 		 const double* ab, const int* ldab,
 		 double* b, const int* ldb, int* info);
 
-/* Double precision Triangular matrices Generalized problems */
+//* Double precision Triangular matrices Generalized problems  -> DTG
 
 /* DTGEVC - compute some or all of the right and/or left */
 /* generalized eigenvectors of a pair of real upper triangular */
@@ -1443,7 +1427,7 @@ F77_NAME(dtgsja)(const char* jobu, const char* jobv, const char* jobq,
 		 double* q, const int* ldq,
 		 double* work, int* ncycle, int* info);
 
-/* Double precision Triangular matrices Packed storage */
+//* Double precision Triangular matrices Packed storage  -> DTP
 
 /* DTPCON - estimate the reciprocal of the condition number of a */
 /* packed triangular matrix A, in either the 1-norm or the */
@@ -1465,9 +1449,6 @@ F77_NAME(dtprfs)(const char* uplo, const char* trans,
 		 double* x, const int* ldx,
 		 double* ferr, double* berr,
 		 double* work, int* iwork, int* info);
-
-/* Double precision TRiangular matrices */
-
 /* DTPTRI - compute the inverse of a real upper or lower */
 /* triangular matrix A stored in packed format */
 La_extern void
@@ -1481,6 +1462,9 @@ F77_NAME(dtptrs)(const char* uplo, const char* trans,
 		 const char* diag, const int* n,
 		 const int* nrhs, const double* ap,
 		 double* b, const int* ldb, int* info);
+
+
+//* Double precision TRiangular matrices -> DTR
 
 /* DTRCON - estimate the reciprocal of the condition number of a */
 /* triangular matrix A, in either the 1-norm or the infinity-norm */
@@ -1582,17 +1566,10 @@ F77_NAME(dtrtrs)(const char* uplo, const char* trans,
 		 const double* a, const int* lda,
 		 double* b, const int* ldb, int* info);
 
-/* DTZRQF - reduce the M-by-N ( M<=N ); real upper trapezoidal */
-/* matrix A to upper triangular form by means of orthogonal */
-/* transformations  */
-La_extern void
-F77_NAME(dtzrqf)(const int* m, const int* n,
-		 double* a, const int* lda,
-		 double* tau, int* info);
 
 
+//* Double precision utilities in Lapack 
 
-/* Double precision utilties in Lapack */
 /* DHGEQZ - implement a single-/double-shift version of the QZ */
 /* method for finding the generalized eigenvalues */
 /* w(j);=(ALPHAR(j); + i*ALPHAI(j););/BETAR(j); of the equation */
@@ -1696,20 +1673,18 @@ F77_NAME(dlaed1)(const int* n, double* d, double* q, const int* ldq,
 La_extern void
 F77_NAME(dlaed2)(const int* k, const int* n, double* d,
 		 double* q, const int* ldq, int* indxq,
-		 double* rho, const int* cutpnt, double* z,
-		 double* dlamda, double* q2, const int *ldq2,
-		 int* indxc, int* w, int* indxp, int* indx,
+		 double* rho, double* z,
+		 double* dlamda, double* w, double* q2,
+		 int* indx, int* indxc, int* indxp,
 		 int* coltyp, int* info);
 /* DLAED3 - find the roots of the secular equation, as defined by */
 /* the values in double* d, W, and RHO, between KSTART and KSTOP */
 La_extern void
-F77_NAME(dlaed3)(const int* k, const int* kstart,
-		 const int *kstop, const int* n,
+F77_NAME(dlaed3)(const int* k, const int* n, const int* n1,
 		 double* d, double* q, const int* ldq,
-		 const double* rho, const int* cutpnt,
-		 double* dlamda, int* q2, const int* ldq2,
-		 int* indxc, int* ctot, double* w,
-		 double* s, const int* lds, int* info);
+		 const double* rho, double* dlamda, double* q2, 
+		 int* indx, int* ctot, double* w,
+		 double* s, int* info);
 /* DLAED4 - subroutine computes the I-th updated eigenvalue of a */
 /* symmetric rank-one modification to a diagonal matrix whose */
 /* elements are given in the array d, and that	 D(i); < D(j); for */
@@ -1854,14 +1829,6 @@ F77_NAME(dlahqr)(const int* wantt, const int* wantz, const int* n,
 		 double* H, const int* ldh, double* wr, double* wi,
 		 const int* iloz, const int* ihiz,
 		 double* z, const int* ldz, int* info);
-/* DLAHRD - reduce the first NB columns of a real general */
-/* n-by-(n-k+1); matrix A so that elements below the k-th */
-/* subdiagonal are zero */
-La_extern void
-F77_NAME(dlahrd)(const int* n, const int* k, const int* nb,
-		 double* a, const int* lda,
-		 double* tau, double* t, const int* ldt,
-		 double* y, const int* ldy);
 /* DLAIC1 - apply one step of incremental condition estimation in */
 /* its simplest version */
 La_extern void
@@ -2224,13 +2191,6 @@ F77_NAME(dlatrs)(const char* uplo, const char* trans,
 		 const char* diag, const char* normin,
 		 const int* n, const double* a, const int* lda,
 		 double* x, double* scale, double* cnorm, int* info);
-/* DLATZM - apply a Householder matrix generated by DTZRQF to a */
-/* matrix */
-La_extern void
-F77_NAME(dlatzm)(const char* side, const int* m, const int* n,
-		 const double* v, const int* incv,
-		 const double* tau, double* c1, double* c2,
-		 const int* ldc, double* work);
 /* DLAUU2 - compute the product U * U' or L' * const int* l, where the */
 /* triangular factor U or L is stored in the upper or lower */
 /* triangular part of the array A */
@@ -2244,11 +2204,11 @@ La_extern void
 F77_NAME(dlauum)(const char* uplo, const int* n,
 		 double* a, const int* lda, int* info);
 
-
 /* ======================================================================== */
 
-/* Selected Double Complex Lapack Routines
-   ========
+
+//* Selected Double Complex Lapack Routines
+/*  ========
  */
 
 /* IZMAX1 finds the index of the element whose real part has maximum
@@ -2352,9 +2312,8 @@ F77_NAME(zlantr)(const char *norm, const char *uplo, const char *diag,
 
 /* ======================================================================== */
 
-/* Other double precision and double complex Lapack routines
-   provided by libRlapack.
-
+//* Other double precision and double complex Lapack routines provided by libRlapack.
+/*
    These are extracted from the CLAPACK headers.
 */
 
@@ -2364,23 +2323,10 @@ F77_NAME(dbdsdc)(char *uplo, char *compq, int *n, double *
 	int *ldvt, double *q, int *iq, double *work, int * iwork, int *info);
 
 La_extern void
-F77_NAME(dgegs)(char *jobvsl, char *jobvsr, int *n,
-	double *a, int *lda, double *b, int *ldb, double *
-	alphar, double *alphai, double *beta, double *vsl,
-	int *ldvsl, double *vsr, int *ldvsr, double *work,
-	int *lwork, int *info);
-
-La_extern void
 F77_NAME(dgelsd)(int *m, int *n, int *nrhs,
 	double *a, int *lda, double *b, int *ldb, double *
 	s, double *rcond, int *rank, double *work, int *lwork,
 	 int *iwork, int *info);
-
-La_extern void
-F77_NAME(dgelsx)(int *m, int *n, int *nrhs,
-	double *a, int *lda, double *b, int *ldb, int *
-	jpvt, double *rcond, int *rank, double *work, int *
-	info);
 
 La_extern void
 F77_NAME(dgesc2)(int *n, double *a, int *lda,
@@ -2428,14 +2374,6 @@ F77_NAME(dggevx)(char *balanc, char *jobvl, char *jobvr, char *
 	double *abnrm, double *bbnrm, double *rconde, double *
 	rcondv, double *work, int *lwork, int *iwork, int *
 	bwork, int *info);
-
-La_extern void
-F77_NAME(dggsvp)(char *jobu, char *jobv, char *jobq, int *m,
-	int *p, int *n, double *a, int *lda, double *b,
-	int *ldb, double *tola, double *tolb, int *k, int
-	*l, double *u, int *ldu, double *v, int *ldv,
-	double *q, int *ldq, int *iwork, double *tau,
-	double *work, int *info);
 
 La_extern void
 F77_NAME(dgtts2)(int *itrans, int *n, int *nrhs,
@@ -2883,11 +2821,6 @@ F77_NAME(zlahqr)(int *wantt, int *wantz, int *n,
 	Rcomplex *w, int *iloz, int *ihiz, Rcomplex *z,
 	int *ldz, int *info);
 
-La_extern void
-F77_NAME(zlahrd)(int *n, int *k, int *nb,
-	Rcomplex *a, int *lda, Rcomplex *tau, Rcomplex *t,
-	int *ldt, Rcomplex *y, int *ldy);
-
 La_extern double
 F77_NAME(zlange)(char *norm, int *m, int *n, Rcomplex *a, int *lda,
 		 double *work);
@@ -3065,8 +2998,125 @@ F77_NAME(zunmlq)(char *side, char *trans, int *m, int *n,
 	Rcomplex *c, int *ldc, Rcomplex *work, int *lwork,
 	 int *info);
 
+/* Added in R 3.1.0 */
+/* ZGESVD - compute the singular value decomposition (SVD); of a   */
+/* real M-by-N matrix A, optionally computing the left and/or	   */
+/* right singular vectors					   */
+La_extern void
+F77_NAME(zgesdd)(const char *jobz,
+		 const int *m, const int *n,
+		 Rcomplex *a, const int *lda, double *s,
+		 Rcomplex *u, const int *ldu,
+		 Rcomplex *vt, const int *ldvt,
+		 Rcomplex *work, const int *lwork, double *rwork,
+		 int *iwork, int *info);
+La_extern void
+F77_NAME(zgelsd)(int *m, int *n, int *nrhs,
+	Rcomplex *a, int *lda, Rcomplex *b, int *ldb, double *s,
+        double *rcond, int *rank, 
+        Rcomplex *work, int *lwork, double *rwork, int *iwork, int *info);
+
+/* =========================== DEPRECATED ==============================
+
+   Routines below were deprecated in LAPACK 3.6.0, and are not
+   included in a default build of LAPACK.
+
+   Currently dgegv, dgeqpf, dggsvd and dggsvp are included in R, but
+   that may change before release of R 3.3.0.
+ */
+
+/* DGEGV - compute for a pair of n-by-n real nonsymmetric */
+/* matrices A and B, the generalized eigenvalues (alphar +/- */
+/* alphai*i, beta);, and optionally, the left and/or right */
+/* generalized eigenvectors (VL and VR); */
+La_extern void
+F77_NAME(dgegv)(const char* jobvl, const char* jobvr,
+		const int* n, double* a, const int* lda,
+		double* b, const int* ldb,
+		double* alphar, double* alphai,
+		const double* beta, double* vl, const int* ldvl,
+		double* vr, const int* ldvr,
+		double* work, const int* lwork, int* info);
+
+/* DGEQPF - compute a QR factorization with column pivoting of a */
+/* real M-by-N matrix A */
+La_extern void
+F77_NAME(dgeqpf)(const int* m, const int* n, double* a, const int* lda,
+		 int* jpvt, double* tau, double* work, int* info);
+
+/* DGGSVD - compute the generalized singular value decomposition */
+/* (GSVD) of an M-by-N real matrix A and P-by-N real matrix B */
+La_extern void
+F77_NAME(dggsvd)(const char* jobu, const char* jobv, const char* jobq,
+		 const int* m, const int* n, const int* p,
+		 const int* k, const int* l,
+		 double* a, const int* lda,
+		 double* b, const int* ldb,
+		 const double* alpha, const double* beta,
+		 double* u, const int* ldu,
+		 double* v, const int* ldv,
+		 double* q, const int* ldq,
+		 double* work, int* iwork, int* info);
+
+/* DTZRQF - reduce the M-by-N ( M<=N ); real upper trapezoidal */
+/* matrix A to upper triangular form by means of orthogonal */
+/* transformations  */
+La_extern void
+F77_NAME(dtzrqf)(const int* m, const int* n,
+		 double* a, const int* lda,
+		 double* tau, int* info);
+
+/* DLAHRD - reduce the first NB columns of a real general */
+/* n-by-(n-k+1); matrix A so that elements below the k-th */
+/* subdiagonal are zero */
+La_extern void
+F77_NAME(dlahrd)(const int* n, const int* k, const int* nb,
+		 double* a, const int* lda,
+		 double* tau, double* t, const int* ldt,
+		 double* y, const int* ldy);
+
+/* DLATZM - apply a Householder matrix generated by DTZRQF to a */
+/* matrix */
+La_extern void
+F77_NAME(dlatzm)(const char* side, const int* m, const int* n,
+		 const double* v, const int* incv,
+		 const double* tau, double* c1, double* c2,
+		 const int* ldc, double* work);
+
+La_extern void
+F77_NAME(dgegs)(char *jobvsl, char *jobvsr, int *n,
+	double *a, int *lda, double *b, int *ldb, double *
+	alphar, double *alphai, double *beta, double *vsl,
+	int *ldvsl, double *vsr, int *ldvsr, double *work,
+	int *lwork, int *info);
+
+La_extern void
+F77_NAME(dgelsx)(int *m, int *n, int *nrhs,
+	double *a, int *lda, double *b, int *ldb, int *
+	jpvt, double *rcond, int *rank, double *work, int *
+	info);
+
+La_extern void
+F77_NAME(dggsvp)(char *jobu, char *jobv, char *jobq, int *m,
+	int *p, int *n, double *a, int *lda, double *b,
+	int *ldb, double *tola, double *tolb, int *k, int
+	*l, double *u, int *ldu, double *v, int *ldv,
+	double *q, int *ldq, int *iwork, double *tau,
+	double *work, int *info);
+
+La_extern void
+F77_NAME(zlahrd)(int *n, int *k, int *nb,
+	Rcomplex *a, int *lda, Rcomplex *tau, Rcomplex *t,
+	int *ldt, Rcomplex *y, int *ldy);
+
+
 #ifdef	__cplusplus
 }
 #endif
 
 #endif /* R_LAPACK_H */
+
+// Local variables: ***
+// mode: outline-minor ***
+// outline-regexp: "^\^L\\|^//[*]+" ***
+// End: ***
