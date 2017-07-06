@@ -17,7 +17,7 @@ OBJS = base/ftsystem.o base/ftdebug.o base/ftinit.o base/ftbase.o \
 	base/ftbitmap.o base/ftglyph.o \
 	cff/cff.o cid/type1cid.o sfnt/sfnt.o truetype/truetype.o \
    	type1/type1.o type42/type42.o winfonts/winfnt.o \
-	smooth/smooth.o autofit/autofit.o psaux/psaux.o \
+	raster/raster.o smooth/smooth.o autofit/autofit.o psaux/psaux.o \
 	pshinter/pshinter.o psnames/psnames.o gzip/ftgzip.o
 
 .PHONY: all clean
