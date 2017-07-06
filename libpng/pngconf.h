@@ -1,7 +1,7 @@
 
 /* pngconf.h - machine configurable file for libpng
  *
- * libpng version 1.6.25, September 1, 2016
+ * libpng version 1.6.29, March 16, 2017
  *
  * Copyright (c) 1998-2002,2004,2006-2016 Glenn Randers-Pehrson
  * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
@@ -366,11 +366,6 @@
 #    endif
 
 #  elif defined(__GNUC__)
-/* Yixuan: used to eliminate compiler warning in pngerror.c png_longjmp() */
-#    ifndef PNG_UNREACHABLE
-#      define PNG_UNREACHABLE __builtin_unreachable()
-#    endif
-/**/
 #    ifndef PNG_USE_RESULT
 #      define PNG_USE_RESULT __attribute__((__warn_unused_result__))
 #    endif
@@ -431,11 +426,6 @@
 #  endif
 #endif /* PNG_PEDANTIC_WARNINGS */
 
-/* Yixuan: used to eliminate compiler warning in pngerror.c png_longjmp() */
-#ifndef PNG_UNREACHABLE
-#  define PNG_UNREACHABLE
-#endif
-/**/
 #ifndef PNG_DEPRECATED
 #  define PNG_DEPRECATED  /* Use of this function is deprecated */
 #endif
@@ -517,9 +507,9 @@
 #  error "libpng requires a signed 32-bit (or more) type"
 #endif
 
-#if UINT_MAX > 4294967294
+#if UINT_MAX > 4294967294U
    typedef unsigned int png_uint_32;
-#elif ULONG_MAX > 4294967294
+#elif ULONG_MAX > 4294967294U
    typedef unsigned long int png_uint_32;
 #else
 #  error "libpng requires an unsigned 32-bit (or more) type"
