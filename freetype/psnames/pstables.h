@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    PostScript glyph names.                                              */
 /*                                                                         */
-/*  Copyright 2005-2017 by                                                 */
+/*  Copyright 2005-2016 by                                                 */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -4135,7 +4135,6 @@
   ;
 
 
-#ifdef  DEFINE_PS_TABLES
   /*
    *  This function searches the compressed table efficiently.
    */
@@ -4230,7 +4229,6 @@
   NotFound:
     return 0;
   }
-#endif /* DEFINE_PS_TABLES */
 
 #endif /* FT_CONFIG_OPTION_ADOBE_GLYPH_LIST */
 

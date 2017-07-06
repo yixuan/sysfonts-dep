@@ -35,4 +35,3 @@ clean:
 	$(RM) $(STATICLIB)
 	$(RM) $(OBJS)
 	$(RM) *.o
-
