@@ -1,4 +1,4 @@
-- zlib 1.2.8
-- libpng 1.6.25
-- freetype 2.7
+- zlib 1.2.11
+- libpng 1.6.29
+- freetype 2.7.1
 - R headers 3.3.0
