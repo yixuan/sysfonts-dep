@@ -35,12 +35,16 @@
  * Windows/Visual Studio) there is no effect; the OS specific tests below are
  * still required (as of 2011-05-02.)
  */
-#define _POSIX_SOURCE 1 /* Just the POSIX 1003.1 and C89 APIs */
+/* #define _POSIX_SOURCE 1 */ /* Just the POSIX 1003.1 and C89 APIs */
+/* Commented by Yixuan Qiu, thanks to Prof. Ripley */
 
 #ifndef PNG_VERSION_INFO_ONLY
 /* Standard library headers not required by png.h: */
 #  include <stdlib.h>
 #  include <string.h>
+/* Added by Yixuan Qiu */
+/* Use error handler in R */
+#include <R_ext/Error.h>
 #endif
 
 #define PNGLIB_BUILD /*libpng is being built, not used*/
@@ -534,12 +538,20 @@
  */
 
 /* Memory model/platform independent fns */
+/* Commented by Yixuan Qiu */
+/* R-ext does not allow abort() */
+/*
 #ifndef PNG_ABORT
 #  ifdef _WINDOWS_
 #    define PNG_ABORT() ExitProcess(0)
 #  else
 #    define PNG_ABORT() abort()
 #  endif
+#endif
+*/
+void PNG_ABORT_WITH_R_HANDLER();
+#ifndef PNG_ABORT
+#    define PNG_ABORT() PNG_ABORT_WITH_R_HANDLER()
 #endif
 
 /* These macros may need to be architecture dependent. */
