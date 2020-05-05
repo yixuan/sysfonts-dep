@@ -35,11 +35,9 @@
  * Windows/Visual Studio) there is no effect; the OS specific tests below are
  * still required (as of 2011-05-02.)
  */
-/*
-#ifndef _POSIX_SOURCE
-# define _POSIX_SOURCE 1 /* Just the POSIX 1003.1 and C89 APIs */
-#endif
-*/
+/* #ifndef _POSIX_SOURCE */
+/* # define _POSIX_SOURCE 1 */ /* Just the POSIX 1003.1 and C89 APIs */
+/* #endif */
 /* Commented by Yixuan Qiu, thanks to Prof. Ripley */
 
 #ifndef PNG_VERSION_INFO_ONLY
