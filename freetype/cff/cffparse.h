@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffparse.h                                                             */
-/*                                                                         */
-/*    CFF token stream parser (specification)                              */
-/*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffparse.h
+ *
+ *   CFF token stream parser (specification)
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CFFPARSE_H_
@@ -21,7 +21,7 @@
 
 
 #include <ft2build.h>
-#include "cfftypes.h"
+#include FT_INTERNAL_CFF_TYPES_H
 #include FT_INTERNAL_OBJECTS_H
 
 
@@ -31,8 +31,16 @@ FT_BEGIN_HEADER
   /* CFF uses constant parser stack size; */
   /* CFF2 can increase from default 193   */
 #define CFF_MAX_STACK_DEPTH  96
+
+  /*
+   * There are plans to remove the `maxstack' operator in a forthcoming
+   * revision of the CFF2 specification, increasing the (then static) stack
+   * size to 513.  By making the default stack size equal to the maximum
+   * stack size, the operator is essentially disabled, which has the
+   * desired effect in FreeType.
+   */
 #define CFF2_MAX_STACK      513
-#define CFF2_DEFAULT_STACK  193
+#define CFF2_DEFAULT_STACK  513
 
 #define CFF_CODE_TOPDICT    0x1000
 #define CFF_CODE_PRIVATE    0x2000
@@ -51,6 +59,10 @@ FT_BEGIN_HEADER
     FT_Byte**   stack;
     FT_Byte**   top;
     FT_UInt     stackSize;  /* allocated size */
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+    FT_ListRec  t2_strings;
+#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
 
     FT_UInt     object_code;
     void*       object;
@@ -121,6 +133,15 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
+
+#ifdef CFF_CONFIG_OPTION_OLD_ENGINE
+  typedef struct  CFF_T2_String_
+  {
+    FT_Byte*  start;
+    FT_Byte*  limit;
+
+  } CFF_T2_StringRec, *CFF_T2_String;
+#endif /* CFF_CONFIG_OPTION_OLD_ENGINE */
 
 #endif /* CFFPARSE_H_ */
 

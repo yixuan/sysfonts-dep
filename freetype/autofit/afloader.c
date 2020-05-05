@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afloader.c                                                             */
-/*                                                                         */
-/*    Auto-fitter glyph loading routines (body).                           */
-/*                                                                         */
-/*  Copyright 2003-2016 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afloader.c
+ *
+ *   Auto-fitter glyph loading routines (body).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "afglobal.h"
@@ -21,7 +21,6 @@
 #include "afhints.h"
 #include "aferrors.h"
 #include "afmodule.h"
-#include "afpic.h"
 
 #include FT_INTERNAL_CALC_H
 
@@ -97,11 +96,13 @@
     AF_FaceGlobals         globals = loader->globals;
     AF_WritingSystemClass  writing_system_class;
 
+    FT_Size_Metrics*  size_metrics = &face->size->internal->autohint_metrics;
+
     FT_Pos  stdVW = 0;
     FT_Pos  stdHW = 0;
 
-    FT_Bool  size_changed = face->size->metrics.x_ppem
-                              != globals->stem_darkening_for_ppem;
+    FT_Bool  size_changed = size_metrics->x_ppem !=
+                              globals->stem_darkening_for_ppem;
 
     FT_Fixed  em_size  = af_intToFixed( face->units_per_EM );
     FT_Fixed  em_ratio = FT_DivFix( af_intToFixed( 1000 ), em_size );
@@ -112,17 +113,17 @@
     /* Skip stem darkening for broken fonts. */
     if ( !face->units_per_EM )
     {
-      error = FT_Err_Corrupted_Font_Header;
+      error = FT_ERR( Corrupted_Font_Header );
       goto Exit;
     }
 
     /*
-     *  We depend on the writing system (script analyzers) to supply
-     *  standard widths for the script of the glyph we are looking at.  If
-     *  it can't deliver, stem darkening is disabled.
+     * We depend on the writing system (script analyzers) to supply
+     * standard widths for the script of the glyph we are looking at.  If
+     * it can't deliver, stem darkening is disabled.
      */
     writing_system_class =
-      AF_WRITING_SYSTEM_CLASSES_GET[style_metrics->style_class->writing_system];
+      af_writing_system_classes[style_metrics->style_class->writing_system];
 
     if ( writing_system_class->style_metrics_getstdw )
       writing_system_class->style_metrics_getstdw( style_metrics,
@@ -130,7 +131,7 @@
                                                    &stdVW );
     else
     {
-      error = FT_Err_Unimplemented_Feature;
+      error = FT_ERR( Unimplemented_Feature );
       goto Exit;
     }
 
@@ -145,11 +146,11 @@
                                                     face,
                                                     stdVW ) );
       darken_x = FT_DivFix( FT_MulFix( darken_by_font_units_x,
-                                       face->size->metrics.x_scale ),
+                                       size_metrics->x_scale ),
                             em_ratio );
 
       globals->standard_vertical_width = stdVW;
-      globals->stem_darkening_for_ppem = face->size->metrics.x_ppem;
+      globals->stem_darkening_for_ppem = size_metrics->x_ppem;
       globals->darken_x                = af_fixedToInt( darken_x );
     }
 
@@ -164,30 +165,30 @@
                                                     face,
                                                     stdHW ) );
       darken_y = FT_DivFix( FT_MulFix( darken_by_font_units_y,
-                                       face->size->metrics.y_scale ),
+                                       size_metrics->y_scale ),
                             em_ratio );
 
       globals->standard_horizontal_width = stdHW;
-      globals->stem_darkening_for_ppem   = face->size->metrics.x_ppem;
+      globals->stem_darkening_for_ppem   = size_metrics->x_ppem;
       globals->darken_y                  = af_fixedToInt( darken_y );
 
       /*
-       *  Scale outlines down on the Y-axis to keep them inside their blue
-       *  zones.  The stronger the emboldening, the stronger the downscaling
-       *  (plus heuristical padding to prevent outlines still falling out
-       *  their zones due to rounding).
+       * Scale outlines down on the Y-axis to keep them inside their blue
+       * zones.  The stronger the emboldening, the stronger the downscaling
+       * (plus heuristical padding to prevent outlines still falling out
+       * their zones due to rounding).
        *
-       *  Reason: `FT_Outline_Embolden' works by shifting the rightmost
-       *  points of stems farther to the right, and topmost points farther
-       *  up.  This positions points on the Y-axis outside their
-       *  pre-computed blue zones and leads to distortion when applying the
-       *  hints in the code further below.  Code outside this emboldening
-       *  block doesn't know we are presenting it with modified outlines the
-       *  analyzer didn't see!
+       * Reason: `FT_Outline_Embolden' works by shifting the rightmost
+       * points of stems farther to the right, and topmost points farther
+       * up.  This positions points on the Y-axis outside their
+       * pre-computed blue zones and leads to distortion when applying the
+       * hints in the code further below.  Code outside this emboldening
+       * block doesn't know we are presenting it with modified outlines the
+       * analyzer didn't see!
        *
-       *  An unfortunate side effect of downscaling is that the emboldening
-       *  effect is slightly decreased.  The loss becomes more pronounced
-       *  versus the CFF driver at smaller sizes, e.g., at 9ppem and below.
+       * An unfortunate side effect of downscaling is that the emboldening
+       * effect is slightly decreased.  The loss becomes more pronounced
+       * versus the CFF driver at smaller sizes, e.g., at 9ppem and below.
        */
       globals->scale_down_factor =
         FT_DivFix( em_size - ( darken_by_font_units_y + af_intToFixed( 8 ) ),
@@ -217,21 +218,18 @@
   {
     FT_Error  error;
 
-    FT_Size           size     = face->size;
-    FT_GlyphSlot      slot     = face->glyph;
-    FT_Slot_Internal  internal = slot->internal;
-    FT_GlyphLoader    gloader  = internal->loader;
+    FT_Size           size          = face->size;
+    FT_Size_Internal  size_internal = size->internal;
+    FT_GlyphSlot      slot          = face->glyph;
+    FT_Slot_Internal  slot_internal = slot->internal;
+    FT_GlyphLoader    gloader       = slot_internal->loader;
 
-    AF_GlyphHints          hints          = loader->hints;
+    AF_GlyphHints          hints         = loader->hints;
     AF_ScalerRec           scaler;
     AF_StyleMetrics        style_metrics;
-    FT_UInt                style_options  = AF_STYLE_NONE_DFLT;
+    FT_UInt                style_options = AF_STYLE_NONE_DFLT;
     AF_StyleClass          style_class;
     AF_WritingSystemClass  writing_system_class;
-
-#ifdef FT_CONFIG_OPTION_PIC
-    AF_FaceGlobals  globals = loader->globals;
-#endif
 
 
     if ( !size )
@@ -239,24 +237,65 @@
 
     FT_ZERO( &scaler );
 
+    if ( !size_internal->autohint_metrics.x_scale                          ||
+         size_internal->autohint_mode != FT_LOAD_TARGET_MODE( load_flags ) )
+    {
+      /* switching between hinting modes usually means different scaling */
+      /* values; this later on enforces recomputation of everything      */
+      /* related to the current size                                     */
+
+      size_internal->autohint_mode    = FT_LOAD_TARGET_MODE( load_flags );
+      size_internal->autohint_metrics = size->metrics;
+
+#ifdef AF_CONFIG_OPTION_TT_SIZE_METRICS
+      {
+        FT_Size_Metrics*  size_metrics = &size_internal->autohint_metrics;
+
+
+        /* set metrics to integer values and adjust scaling accordingly; */
+        /* this is the same setup as with TrueType fonts, cf. function   */
+        /* `tt_size_reset' in file `ttobjs.c'                            */
+        size_metrics->ascender  = FT_PIX_ROUND(
+                                    FT_MulFix( face->ascender,
+                                               size_metrics->y_scale ) );
+        size_metrics->descender = FT_PIX_ROUND(
+                                    FT_MulFix( face->descender,
+                                               size_metrics->y_scale ) );
+        size_metrics->height    = FT_PIX_ROUND(
+                                    FT_MulFix( face->height,
+                                               size_metrics->y_scale ) );
+
+        size_metrics->x_scale     = FT_DivFix( size_metrics->x_ppem << 6,
+                                               face->units_per_EM );
+        size_metrics->y_scale     = FT_DivFix( size_metrics->y_ppem << 6,
+                                               face->units_per_EM );
+        size_metrics->max_advance = FT_PIX_ROUND(
+                                      FT_MulFix( face->max_advance_width,
+                                                 size_metrics->x_scale ) );
+      }
+#endif /* AF_CONFIG_OPTION_TT_SIZE_METRICS */
+    }
+
     /*
-     *  TODO: This code currently doesn't support fractional advance widths,
-     *  i.e.  placing hinted glyphs at anything other than integer
-     *  x-positions.  This is only relevant for the warper code, which
-     *  scales and shifts glyphs to optimize blackness of stems (hinting on
-     *  the x-axis by nature places things on pixel integers, hinting on the
-     *  y-axis only, i.e.  LIGHT mode, doesn't touch the x-axis).  The delta
-     *  values of the scaler would need to be adjusted.
+     * TODO: This code currently doesn't support fractional advance widths,
+     * i.e., placing hinted glyphs at anything other than integer
+     * x-positions.  This is only relevant for the warper code, which
+     * scales and shifts glyphs to optimize blackness of stems (hinting on
+     * the x-axis by nature places things on pixel integers, hinting on the
+     * y-axis only, i.e., LIGHT mode, doesn't touch the x-axis).  The delta
+     * values of the scaler would need to be adjusted.
      */
     scaler.face    = face;
-    scaler.x_scale = size->metrics.x_scale;
+    scaler.x_scale = size_internal->autohint_metrics.x_scale;
     scaler.x_delta = 0;
-    scaler.y_scale = size->metrics.y_scale;
+    scaler.y_scale = size_internal->autohint_metrics.y_scale;
     scaler.y_delta = 0;
 
     scaler.render_mode = FT_LOAD_TARGET_MODE( load_flags );
     scaler.flags       = 0;
 
+    /* note that the fallback style can't be changed anymore */
+    /* after the first call of `af_loader_load_glyph'        */
     error = af_loader_reset( loader, module, face );
     if ( error )
       goto Exit;
@@ -268,10 +307,10 @@
 #endif
 
     /*
-     *  Glyphs (really code points) are assigned to scripts.  Script
-     *  analysis is done lazily: For each glyph that passes through here,
-     *  the corresponding script analyzer is called, but returns immediately
-     *  if it has been run already.
+     * Glyphs (really code points) are assigned to scripts.  Script
+     * analysis is done lazily: For each glyph that passes through here,
+     * the corresponding script analyzer is called, but returns immediately
+     * if it has been run already.
      */
     error = af_face_globals_get_metrics( loader->globals, glyph_index,
                                          style_options, &style_metrics );
@@ -280,7 +319,7 @@
 
     style_class          = style_metrics->style_class;
     writing_system_class =
-      AF_WRITING_SYSTEM_CLASSES_GET[style_class->writing_system];
+      af_writing_system_classes[style_class->writing_system];
 
     loader->metrics = style_metrics;
 
@@ -298,11 +337,11 @@
     }
 
     /*
-     *  Do the main work of `af_loader_load_glyph'.  Note that we never have
-     *  to deal with composite glyphs as those get loaded into
-     *  FT_GLYPH_FORMAT_OUTLINE by the recursed `FT_Load_Glyph' function.
-     *  In the rare cases where FT_LOAD_NO_RECURSE is set, it implies
-     *  FT_LOAD_NO_SCALE and as such the auto-hinter is never called.
+     * Do the main work of `af_loader_load_glyph'.  Note that we never have
+     * to deal with composite glyphs as those get loaded into
+     * FT_GLYPH_FORMAT_OUTLINE by the recursed `FT_Load_Glyph' function.
+     * In the rare cases where FT_LOAD_NO_RECURSE is set, it implies
+     * FT_LOAD_NO_SCALE and as such the auto-hinter is never called.
      */
     load_flags |=  FT_LOAD_NO_SCALE         |
                    FT_LOAD_IGNORE_TRANSFORM |
@@ -314,38 +353,44 @@
       goto Exit;
 
     /*
-     *  Apply stem darkening (emboldening) here before hints are applied to
-     *  the outline.  Glyphs are scaled down proportionally to the
-     *  emboldening so that curve points don't fall outside their
-     *  precomputed blue zones.
+     * Apply stem darkening (emboldening) here before hints are applied to
+     * the outline.  Glyphs are scaled down proportionally to the
+     * emboldening so that curve points don't fall outside their
+     * precomputed blue zones.
      *
-     *  Any emboldening done by the font driver (e.g., the CFF driver)
-     *  doesn't reach here because the autohinter loads the unprocessed
-     *  glyphs in font units for analysis (functions `af_*_metrics_init_*')
-     *  and then above to prepare it for the rasterizers by itself,
-     *  independently of the font driver.  So emboldening must be done here,
-     *  within the autohinter.
+     * Any emboldening done by the font driver (e.g., the CFF driver)
+     * doesn't reach here because the autohinter loads the unprocessed
+     * glyphs in font units for analysis (functions `af_*_metrics_init_*')
+     * and then above to prepare it for the rasterizers by itself,
+     * independently of the font driver.  So emboldening must be done here,
+     * within the autohinter.
      *
-     *  All glyphs to be autohinted pass through here one by one.  The
-     *  standard widths can therefore change from one glyph to the next,
-     *  depending on what script a glyph is assigned to (each script has its
-     *  own set of standard widths and other metrics).  The darkening amount
-     *  must therefore be recomputed for each size and
-     *  `standard_{vertical,horizontal}_width' change.
+     * All glyphs to be autohinted pass through here one by one.  The
+     * standard widths can therefore change from one glyph to the next,
+     * depending on what script a glyph is assigned to (each script has its
+     * own set of standard widths and other metrics).  The darkening amount
+     * must therefore be recomputed for each size and
+     * `standard_{vertical,horizontal}_width' change.
      *
-     *  Ignore errors and carry on without emboldening.
+     * Ignore errors and carry on without emboldening.
+     *
      */
-    if ( !module->no_stem_darkening )
+
+    /* stem darkening only works well in `light' mode */
+    if ( scaler.render_mode == FT_RENDER_MODE_LIGHT    &&
+         ( !face->internal->no_stem_darkening        ||
+           ( face->internal->no_stem_darkening < 0 &&
+             !module->no_stem_darkening            ) ) )
       af_loader_embolden_glyph_in_slot( loader, face, style_metrics );
 
-    loader->transformed = internal->glyph_transformed;
+    loader->transformed = slot_internal->glyph_transformed;
     if ( loader->transformed )
     {
       FT_Matrix  inverse;
 
 
-      loader->trans_matrix = internal->glyph_matrix;
-      loader->trans_delta  = internal->glyph_delta;
+      loader->trans_matrix = slot_internal->glyph_matrix;
+      loader->trans_delta  = slot_internal->glyph_delta;
 
       inverse = loader->trans_matrix;
       if ( !FT_Matrix_Invert( &inverse ) )
@@ -375,41 +420,40 @@
 
       /* now load the slot image into the auto-outline */
       /* and run the automatic hinting process         */
+      if ( writing_system_class->style_hints_apply )
       {
-#ifdef FT_CONFIG_OPTION_PIC
-        AF_FaceGlobals  globals = loader->globals;
-#endif
-
-
-        if ( writing_system_class->style_hints_apply )
-          writing_system_class->style_hints_apply( glyph_index,
-                                                   hints,
-                                                   &gloader->base.outline,
-                                                   style_metrics );
+        error = writing_system_class->style_hints_apply(
+                  glyph_index,
+                  hints,
+                  &gloader->base.outline,
+                  style_metrics );
+        if ( error )
+          goto Exit;
       }
 
       /* we now need to adjust the metrics according to the change in */
       /* width/positioning that occurred during the hinting process   */
       if ( scaler.render_mode != FT_RENDER_MODE_LIGHT )
       {
-        FT_Pos  old_rsb, old_lsb, new_lsb;
-        FT_Pos  pp1x_uh, pp2x_uh;
-
         AF_AxisHints  axis  = &hints->axis[AF_DIMENSION_HORZ];
-        AF_Edge       edge1 = axis->edges;         /* leftmost edge  */
-        AF_Edge       edge2 = edge1 +
-                              axis->num_edges - 1; /* rightmost edge */
 
 
         if ( axis->num_edges > 1 && AF_HINTS_DO_ADVANCE( hints ) )
         {
-          old_rsb = loader->pp2.x - edge2->opos;
-          /* loader->pp1.x is always zero at this point of time */
-          old_lsb = edge1->opos /* - loader->pp1.x */;
-          new_lsb = edge1->pos;
+          AF_Edge  edge1 = axis->edges;         /* leftmost edge  */
+          AF_Edge  edge2 = edge1 +
+                           axis->num_edges - 1; /* rightmost edge */
 
-          pp1x_uh = new_lsb    - old_lsb;
-          pp2x_uh = edge2->pos + old_rsb;
+          FT_Pos  old_rsb = loader->pp2.x - edge2->opos;
+          /* loader->pp1.x is always zero at this point of time */
+          FT_Pos  old_lsb = edge1->opos;     /* - loader->pp1.x */
+          FT_Pos  new_lsb = edge1->pos;
+
+          /* remember unhinted values to later account */
+          /* for rounding errors                       */
+          FT_Pos  pp1x_uh = new_lsb    - old_lsb;
+          FT_Pos  pp2x_uh = edge2->pos + old_rsb;
+
 
           /* prefer too much space over too little space */
           /* for very small sizes                        */
@@ -438,21 +482,23 @@
           FT_Pos  pp2x = loader->pp2.x;
 
 
-          loader->pp1.x = FT_PIX_ROUND( pp1x );
-          loader->pp2.x = FT_PIX_ROUND( pp2x );
+          loader->pp1.x = FT_PIX_ROUND( pp1x + hints->xmin_delta );
+          loader->pp2.x = FT_PIX_ROUND( pp2x + hints->xmax_delta );
 
           slot->lsb_delta = loader->pp1.x - pp1x;
           slot->rsb_delta = loader->pp2.x - pp2x;
         }
       }
+      /* `light' mode uses integer advance widths */
+      /* but sets `lsb_delta' and `rsb_delta'     */
       else
       {
         FT_Pos  pp1x = loader->pp1.x;
         FT_Pos  pp2x = loader->pp2.x;
 
 
-        loader->pp1.x = FT_PIX_ROUND( pp1x + hints->xmin_delta );
-        loader->pp2.x = FT_PIX_ROUND( pp2x + hints->xmax_delta );
+        loader->pp1.x = FT_PIX_ROUND( pp1x );
+        loader->pp2.x = FT_PIX_ROUND( pp2x );
 
         slot->lsb_delta = loader->pp1.x - pp1x;
         slot->rsb_delta = loader->pp2.x - pp2x;

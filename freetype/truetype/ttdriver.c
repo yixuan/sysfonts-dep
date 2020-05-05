@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttdriver.c                                                             */
-/*                                                                         */
-/*    TrueType font driver implementation (body).                          */
-/*                                                                         */
-/*  Copyright 1996-2016 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttdriver.c
+ *
+ *   TrueType font driver implementation (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -31,7 +31,7 @@
 #include FT_SERVICE_TRUETYPE_ENGINE_H
 #include FT_SERVICE_TRUETYPE_GLYF_H
 #include FT_SERVICE_PROPERTIES_H
-#include FT_TRUETYPE_DRIVER_H
+#include FT_DRIVER_H
 
 #include "ttdriver.h"
 #include "ttgload.h"
@@ -43,20 +43,19 @@
 
 #include "tterrors.h"
 
-#include "ttpic.h"
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttdriver
+#define FT_COMPONENT  ttdriver
 
 
   /*
-   *  PROPERTY SERVICE
+   * PROPERTY SERVICE
    *
    */
   static FT_Error
@@ -164,38 +163,42 @@
   /*************************************************************************/
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_get_kerning                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A driver method used to return the kerning vector between two      */
-  /*    glyphs of the same face.                                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face        :: A handle to the source face object.                 */
-  /*                                                                       */
-  /*    left_glyph  :: The index of the left glyph in the kern pair.       */
-  /*                                                                       */
-  /*    right_glyph :: The index of the right glyph in the kern pair.      */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    kerning     :: The kerning vector.  This is in font units for      */
-  /*                   scalable formats, and in pixels for fixed-sizes     */
-  /*                   formats.                                            */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
-  /* <Note>                                                                */
-  /*    Only horizontal layouts (left-to-right & right-to-left) are        */
-  /*    supported by this function.  Other layouts, or more sophisticated  */
-  /*    kernings, are out of scope of this method (the basic driver        */
-  /*    interface is meant to be simple).                                  */
-  /*                                                                       */
-  /*    They can be implemented by format-specific interfaces.             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_get_kerning
+   *
+   * @Description:
+   *   A driver method used to return the kerning vector between two
+   *   glyphs of the same face.
+   *
+   * @Input:
+   *   face ::
+   *     A handle to the source face object.
+   *
+   *   left_glyph ::
+   *     The index of the left glyph in the kern pair.
+   *
+   *   right_glyph ::
+   *     The index of the right glyph in the kern pair.
+   *
+   * @Output:
+   *   kerning ::
+   *     The kerning vector.  This is in font units for
+   *     scalable formats, and in pixels for fixed-sizes
+   *     formats.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   *
+   * @Note:
+   *   Only horizontal layouts (left-to-right & right-to-left) are
+   *   supported by this function.  Other layouts, or more sophisticated
+   *   kernings, are out of scope of this method (the basic driver
+   *   interface is meant to be simple).
+   *
+   *   They can be implemented by format-specific interfaces.
+   */
   static FT_Error
   tt_get_kerning( FT_Face     ttface,          /* TT_Face */
                   FT_UInt     left_glyph,
@@ -233,8 +236,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without VVAR table */
-      if ( !face->is_default_instance                               &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE ) )
+      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
+           !( face->variation_support & TT_FACE_FLAG_VAR_VADVANCE )        )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -253,8 +256,8 @@
     {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
       /* no fast retrieval for blended MM fonts without HVAR table */
-      if ( !face->is_default_instance                               &&
-           !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE ) )
+      if ( ( FT_IS_NAMED_INSTANCE( ttface ) || FT_IS_VARIATION( ttface ) ) &&
+           !( face->variation_support & TT_FACE_FLAG_VAR_HADVANCE )        )
         return FT_THROW( Unimplemented_Feature );
 #endif
 
@@ -304,15 +307,17 @@
       /* use the scaled metrics, even when tt_size_reset fails */
       FT_Select_Metrics( size->face, strike_index );
 
-      tt_size_reset( ttsize ); /* ignore return value */
+      tt_size_reset( ttsize, 0 ); /* ignore return value */
     }
     else
     {
-      SFNT_Service      sfnt    = (SFNT_Service)ttface->sfnt;
-      FT_Size_Metrics*  metrics = &size->metrics;
+      SFNT_Service      sfnt         = (SFNT_Service)ttface->sfnt;
+      FT_Size_Metrics*  size_metrics = &size->metrics;
 
 
-      error = sfnt->load_strike_metrics( ttface, strike_index, metrics );
+      error = sfnt->load_strike_metrics( ttface,
+                                         strike_index,
+                                         size_metrics );
       if ( error )
         ttsize->strike_index = 0xFFFFFFFFUL;
     }
@@ -354,15 +359,16 @@
 
     if ( FT_IS_SCALABLE( size->face ) )
     {
-      error = tt_size_reset( ttsize );
-      ttsize->root.metrics = ttsize->metrics;
+      error = tt_size_reset( ttsize, 0 );
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
       /* for the `MPS' bytecode instruction we need the point size */
+      if ( !error )
       {
-        FT_UInt  resolution = ttsize->metrics.x_ppem > ttsize->metrics.y_ppem
-                                ? req->horiResolution
-                                : req->vertResolution;
+        FT_UInt  resolution =
+                   ttsize->metrics->x_ppem > ttsize->metrics->y_ppem
+                     ? req->horiResolution
+                     : req->vertResolution;
 
 
         /* if we don't have a resolution value, assume 72dpi */
@@ -381,32 +387,36 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_glyph_load                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A driver method used to load a glyph within a given glyph slot.    */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    slot        :: A handle to the target slot object where the glyph  */
-  /*                   will be loaded.                                     */
-  /*                                                                       */
-  /*    size        :: A handle to the source face size at which the glyph */
-  /*                   must be scaled, loaded, etc.                        */
-  /*                                                                       */
-  /*    glyph_index :: The index of the glyph in the font file.            */
-  /*                                                                       */
-  /*    load_flags  :: A flag indicating what to load for this glyph.  The */
-  /*                   FT_LOAD_XXX constants can be used to control the    */
-  /*                   glyph loading process (e.g., whether the outline    */
-  /*                   should be scaled, whether to load bitmaps or not,   */
-  /*                   whether to hint the outline, etc).                  */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_glyph_load
+   *
+   * @Description:
+   *   A driver method used to load a glyph within a given glyph slot.
+   *
+   * @Input:
+   *   slot ::
+   *     A handle to the target slot object where the glyph
+   *     will be loaded.
+   *
+   *   size ::
+   *     A handle to the source face size at which the glyph
+   *     must be scaled, loaded, etc.
+   *
+   *   glyph_index ::
+   *     The index of the glyph in the font file.
+   *
+   *   load_flags ::
+   *     A flag indicating what to load for this glyph.  The
+   *     FT_LOAD_XXX constants can be used to control the
+   *     glyph loading process (e.g., whether the outline
+   *     should be scaled, whether to load bitmaps or not,
+   *     whether to hint the outline, etc).
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   static FT_Error
   tt_glyph_load( FT_GlyphSlot  ttslot,      /* TT_GlyphSlot */
                  FT_Size       ttsize,      /* TT_Size      */
@@ -456,7 +466,12 @@
         load_flags |= FT_LOAD_NO_HINTING;
     }
 
-    /* now load the glyph outline if necessary */
+    /* use hinted metrics only if we load a glyph with hinting */
+    size->metrics = ( load_flags & FT_LOAD_NO_HINTING )
+                      ? &ttsize->metrics
+                      : &size->hinted_metrics;
+
+    /* now fill in the glyph slot with outline/bitmap/layered */
     error = TT_Load_Glyph( size, slot, glyph_index, load_flags );
 
     /* force drop-out mode to 2 - irrelevant now */
@@ -483,16 +498,19 @@
   FT_DEFINE_SERVICE_MULTIMASTERSREC(
     tt_service_gx_multi_masters,
 
-    (FT_Get_MM_Func)        NULL,                   /* get_mm         */
-    (FT_Set_MM_Design_Func) NULL,                   /* set_mm_design  */
-    (FT_Set_MM_Blend_Func)  TT_Set_MM_Blend,        /* set_mm_blend   */
-    (FT_Get_MM_Blend_Func)  TT_Get_MM_Blend,        /* get_mm_blend   */
-    (FT_Get_MM_Var_Func)    TT_Get_MM_Var,          /* get_mm_var     */
-    (FT_Set_Var_Design_Func)TT_Set_Var_Design,      /* set_var_design */
-    (FT_Get_Var_Design_Func)TT_Get_Var_Design,      /* get_var_design */
+    (FT_Get_MM_Func)             NULL,                  /* get_mm              */
+    (FT_Set_MM_Design_Func)      NULL,                  /* set_mm_design       */
+    (FT_Set_MM_Blend_Func)       TT_Set_MM_Blend,       /* set_mm_blend        */
+    (FT_Get_MM_Blend_Func)       TT_Get_MM_Blend,       /* get_mm_blend        */
+    (FT_Get_MM_Var_Func)         TT_Get_MM_Var,         /* get_mm_var          */
+    (FT_Set_Var_Design_Func)     TT_Set_Var_Design,     /* set_var_design      */
+    (FT_Get_Var_Design_Func)     TT_Get_Var_Design,     /* get_var_design      */
+    (FT_Set_Instance_Func)       TT_Set_Named_Instance, /* set_instance        */
+    (FT_Set_MM_WeightVector_Func)NULL,                  /* set_mm_weightvector */
+    (FT_Get_MM_WeightVector_Func)NULL,                  /* get_mm_weightvector */
 
-    (FT_Get_Var_Blend_Func) tt_get_var_blend,       /* get_var_blend  */
-    (FT_Done_Blend_Func)    tt_done_blend           /* done_blend     */
+    (FT_Get_Var_Blend_Func)      tt_get_var_blend,      /* get_var_blend       */
+    (FT_Done_Blend_Func)         tt_done_blend          /* done_blend          */
   )
 
   FT_DEFINE_SERVICE_METRICSVARIATIONSREC(
@@ -502,12 +520,12 @@
     (FT_LSB_Adjust_Func)     NULL,                   /* lsb_adjust      */
     (FT_RSB_Adjust_Func)     NULL,                   /* rsb_adjust      */
 
-    (FT_VAdvance_Adjust_Func)NULL,                   /* vadvance_adjust */
+    (FT_VAdvance_Adjust_Func)tt_vadvance_adjust,     /* vadvance_adjust */
     (FT_TSB_Adjust_Func)     NULL,                   /* tsb_adjust      */
     (FT_BSB_Adjust_Func)     NULL,                   /* bsb_adjust      */
     (FT_VOrg_Adjust_Func)    NULL,                   /* vorg_adjust     */
 
-    (FT_Metrics_Adjust_Func) NULL                    /* metrics_adjust  */
+    (FT_Metrics_Adjust_Func) tt_apply_mvar           /* metrics_adjust  */
   )
 
 #endif /* TT_CONFIG_OPTION_GX_VAR_SUPPORT */
@@ -539,19 +557,19 @@
     tt_services,
 
     FT_SERVICE_ID_FONT_FORMAT,        FT_FONT_FORMAT_TRUETYPE,
-    FT_SERVICE_ID_MULTI_MASTERS,      &TT_SERVICE_GX_MULTI_MASTERS_GET,
-    FT_SERVICE_ID_METRICS_VARIATIONS, &TT_SERVICE_METRICS_VARIATIONS_GET,
+    FT_SERVICE_ID_MULTI_MASTERS,      &tt_service_gx_multi_masters,
+    FT_SERVICE_ID_METRICS_VARIATIONS, &tt_service_metrics_variations,
     FT_SERVICE_ID_TRUETYPE_ENGINE,    &tt_service_truetype_engine,
-    FT_SERVICE_ID_TT_GLYF,            &TT_SERVICE_TRUETYPE_GLYF_GET,
-    FT_SERVICE_ID_PROPERTIES,         &TT_SERVICE_PROPERTIES_GET )
+    FT_SERVICE_ID_TT_GLYF,            &tt_service_truetype_glyf,
+    FT_SERVICE_ID_PROPERTIES,         &tt_service_properties )
 #else
   FT_DEFINE_SERVICEDESCREC4(
     tt_services,
 
     FT_SERVICE_ID_FONT_FORMAT,     FT_FONT_FORMAT_TRUETYPE,
     FT_SERVICE_ID_TRUETYPE_ENGINE, &tt_service_truetype_engine,
-    FT_SERVICE_ID_TT_GLYF,         &TT_SERVICE_TRUETYPE_GLYF_GET,
-    FT_SERVICE_ID_PROPERTIES,      &TT_SERVICE_PROPERTIES_GET )
+    FT_SERVICE_ID_TT_GLYF,         &tt_service_truetype_glyf,
+    FT_SERVICE_ID_PROPERTIES,      &tt_service_properties )
 #endif
 
 
@@ -565,26 +583,15 @@
     SFNT_Service         sfnt;
 
 
-    /* TT_SERVICES_GET dereferences `library' in PIC mode */
-#ifdef FT_CONFIG_OPTION_PIC
-    if ( !driver )
-      return NULL;
-    library = driver->library;
-    if ( !library )
-      return NULL;
-#endif
-
-    result = ft_service_list_lookup( TT_SERVICES_GET, tt_interface );
+    result = ft_service_list_lookup( tt_services, tt_interface );
     if ( result )
       return result;
 
-#ifndef FT_CONFIG_OPTION_PIC
     if ( !driver )
       return NULL;
     library = driver->library;
     if ( !library )
       return NULL;
-#endif
 
     /* only return the default interface from the SFNT module */
     sfntd = FT_Get_Module( library, "sfnt" );
